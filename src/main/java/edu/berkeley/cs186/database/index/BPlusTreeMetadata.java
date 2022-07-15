@@ -4,7 +4,10 @@ import edu.berkeley.cs186.database.databox.Type;
 import edu.berkeley.cs186.database.databox.TypeId;
 import edu.berkeley.cs186.database.table.Record;
 
-/** Metadata about a B+ tree. */
+/** Metadata about a B+ tree.
+ *
+ * B树的元信息，比如树的阶和高。BPlusTree,BPlusNode等类中都有BPlusTreeMetadata的成员变量。
+ * */
 public class BPlusTreeMetadata {
     // Table for which this B+ tree is for
     private final String tableName;

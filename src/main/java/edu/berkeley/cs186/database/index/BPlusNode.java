@@ -14,6 +14,8 @@ import java.util.Optional;
 /**
  * An inner node or a leaf node. See InnerNode and LeafNode for more
  * information.
+ *
+ * 节点抽象类
  */
 abstract class BPlusNode {
     // Core API ////////////////////////////////////////////////////////////////
@@ -21,6 +23,8 @@ abstract class BPlusNode {
      * n.get(k) returns the leaf node on which k may reside when queried from n.
      * For example, consider the following B+ tree (for brevity, only keys are
      * shown; record ids are omitted).
+     *
+     * n.get(k)返回从n查询k可能所在的叶节点。注意是可能
      *
      *                               inner
      *                               +----+----+----+----+
@@ -96,6 +100,8 @@ abstract class BPlusNode {
      * split key. In this example, 3 is the split key. After leaf0 splits, inner
      * inserts the new key and child pointer into itself and hits case 0 (i.e. it
      * does not overflow). The tree looks like this:
+     *
+     * 内部节点插入新key（3），并且增加子节点指针，此时符合0的场景，即内部节点不溢出的情况。
      *
      *                          inner
      *                          +--+--+--+--+

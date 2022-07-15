@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * of multigranularity locking. Calls to acquire/release/etc. locks should
  * be mostly done through a LockContext, which provides access to locking
  * methods at a certain point in the hierarchy (database, table X, etc.)
+ *
+ * LockContext封装LockManager来提供多粒度的锁定。
  */
 public class LockContext {
     // You should not remove any of these fields. You may add additional
