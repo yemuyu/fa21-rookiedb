@@ -4,6 +4,7 @@ import java.util.*;
 
 /**
  * "Disk" space manager that really just keeps things in memory. Not thread safe.
+ * 实际上只是将内容保存在内存中
  */
 public class MemoryDiskSpaceManager implements DiskSpaceManager {
     private Map<Integer, Set<Integer>> partitions = new HashMap<>();

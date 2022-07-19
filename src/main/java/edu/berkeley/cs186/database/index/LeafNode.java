@@ -256,10 +256,12 @@ class LeafNode extends BPlusNode {
     /**
      * Returns the largest number d such that the serialization of a LeafNode
      * with 2d entries will fit on a single page.
+     *
+     * 返回最大的阶，2倍的阶能填满单个页面
      */
     static int maxOrder(short pageSize, Type keySchema) {
         // A leaf node with n entries takes up the following number of bytes:
-        //
+        // 具有 n 个条目的叶节点占用以下字节数
         //   1 + 8 + 4 + n * (keySize + ridSize)
         //
         // where
@@ -272,6 +274,7 @@ class LeafNode extends BPlusNode {
         //   - ridSize is the number of bytes of a RecordId.
         //
         // Solving the following equation
+        // 求解以下方程
         //
         //   n * (keySize + ridSize) + 13 <= pageSizeInBytes
         //
@@ -329,6 +332,7 @@ class LeafNode extends BPlusNode {
         //
         //   a. the literal value 1 (1 byte) which indicates that this node is a
         //      leaf node,
+        //   字面值 1（1 个字节），指示此节点是叶节点
         //   b. the page id (8 bytes) of our right sibling (or -1 if we don't have
         //      a right sibling),
         //   c. the number (4 bytes) of (key, rid) pairs this leaf node contains,
@@ -358,6 +362,7 @@ class LeafNode extends BPlusNode {
         int entriesSize = (keySize + ridSize) * keys.size();
         int size = isLeafSize + siblingSize + lenSize + entriesSize;
 
+        //ByteBuffer的使用
         ByteBuffer buf = ByteBuffer.allocate(size);
         buf.put((byte) 1);
         buf.putLong(rightSibling.orElse(-1L));
@@ -378,8 +383,38 @@ class LeafNode extends BPlusNode {
         // Note: LeafNode has two constructors. To implement fromBytes be sure to
         // use the constructor that reuses an existing page instead of fetching a
         // brand new one.
+        //重用一个存在的页面而不是获取一个新页面，使用LeafNode的带page参数的构造方法
 
-        return null;
+        //   +----+-------------------------+-------------+----+-------------------------------+
+        //   | 01 | 00 00 00 00 00 00 00 04 | 00 00 00 01 | 03 | 00 00 00 00 00 00 00 03 00 01 |
+        //   +----+-------------------------+-------------+----+-------------------------------+
+        //    \__/ \_______________________/ \___________/ \__________________________________/
+        //     a               b                   c                         d
+        //
+        //b：右兄弟节点指针
+
+        //1.读取节点类型
+        Page page = bufferManager.fetchPage(treeContext, pageNum);
+        Buffer buffer = page.getBuffer();
+        byte nodeType = buffer.get();
+        assert(nodeType == (byte) 1);
+        //2.读取右兄弟节点
+        Optional<Long> rightSibling = Optional.of(buffer.getLong());
+        List<DataBox> keys = new ArrayList<>();
+        List<RecordId> rids = new ArrayList<>();
+        //3.读取pairs的数量
+        int keySize = buffer.getInt();
+        //读取key类型
+        Type keySchema = metadata.getKeySchema();
+        //4.读取pairs数据
+        for (int i = 0; i < keySize; i++) {
+            DataBox dataBox = DataBox.fromBytes(buffer, keySchema);
+            keys.add(dataBox);
+            RecordId recordId = RecordId.fromBytes(buffer);
+            rids.add(recordId);
+        }
+        LeafNode leafNode = new LeafNode(metadata, bufferManager, page, keys, rids, rightSibling, treeContext);
+        return leafNode;
     }
 
     // Builtins ////////////////////////////////////////////////////////////////

@@ -75,6 +75,7 @@ public class TestBPlusNode {
                                      treeContext);
 
         // Inner node.
+        // 内部节点，数据结构的innerChildren类型为long,是叶子节点，没有右兄弟节点的指针
         List<DataBox> innerKeys = new ArrayList<>();
         List<Long> innerChildren = new ArrayList<>();
         for (int i = 0; i < 2 * ORDER; ++i) {

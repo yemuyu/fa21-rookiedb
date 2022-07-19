@@ -15,6 +15,7 @@ public interface DiskSpaceManager extends AutoCloseable {
     int allocPart();
 
     /**
+     * 分区，区包含页
      * Allocates a new partition with a specific partition number.
      *
      * @param partNum partition number of new partition

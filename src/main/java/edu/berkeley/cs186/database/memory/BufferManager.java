@@ -19,6 +19,8 @@ import java.util.function.BiConsumer;
  * to the page loaded (evicting and loading a new page into the frame will result in
  * a new Frame object, with the same underlying byte array), with old Frame objects
  * backed by the same byte array marked as invalid.
+ *
+ * 缓冲区管理器的实现，具有可配置的页面替换策略。
  */
 public class BufferManager implements AutoCloseable {
     // We reserve 36 bytes on each page for bookkeeping for recovery
@@ -57,6 +59,8 @@ public class BufferManager implements AutoCloseable {
      * Buffer frame, containing information about the loaded page, wrapped around the
      * underlying byte array. Free frames use the index field to create a (singly) linked
      * list between free frames.
+     *
+     * 缓存帧，包含页数据，包装底层字节数组。空闲的帧以单链表结构管理。
      */
     class Frame extends BufferFrame {
         private static final int INVALID_INDEX = Integer.MIN_VALUE;

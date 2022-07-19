@@ -344,15 +344,19 @@ class InnerNode extends BPlusNode {
         Page page = bufferManager.fetchPage(treeContext, pageNum);
         Buffer buf = page.getBuffer();
 
+        //节点类型，叶子、内部
         byte nodeType = buf.get();
         assert(nodeType == (byte) 0);
 
         List<DataBox> keys = new ArrayList<>();
         List<Long> children = new ArrayList<>();
+        //key的数量
         int n = buf.getInt();
+        //n个key
         for (int i = 0; i < n; ++i) {
             keys.add(DataBox.fromBytes(buf, metadata.getKeySchema()));
         }
+        //n+1个子节点指针
         for (int i = 0; i < n + 1; ++i) {
             children.add(buf.getLong());
         }
