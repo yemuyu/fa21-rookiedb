@@ -64,6 +64,8 @@ public class TestBPlusNode {
         // Test deserialization for both leaf nodes and inner nodes
         // This test should be passing after you implement LeafNode::fromBytes
 
+        //实现LeafNode::fromBytes后，执行此测试方法
+
         // Leaf node.
         List<DataBox> leafKeys = new ArrayList<>();
         List<RecordId> leafRids = new ArrayList<>();

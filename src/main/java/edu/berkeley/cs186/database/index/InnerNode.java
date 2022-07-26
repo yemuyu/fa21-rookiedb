@@ -81,8 +81,12 @@ class InnerNode extends BPlusNode {
     @Override
     public LeafNode get(DataBox key) {
         // TODO(proj2): implement
-
-        return null;
+        //小于等于key的子节点的数量，这个数字其实就是子节点数组的索引
+        int childIndex = numLessThanEqual(key, keys);
+        //子节点
+        BPlusNode child = getChild(childIndex);
+        //子节点如果是内部节点继续递归，如果是叶子节点返回叶子节点
+        return child.get(key);
     }
 
     // See BPlusNode.getLeftmostLeaf.
@@ -190,6 +194,8 @@ class InnerNode extends BPlusNode {
      * the number of elements in ys that are less than or equal to x. For
      * example,
      *
+     * 给定一个按升序排序的列表 ys，numLessThanEqual(x, ys) 返回 ys 中小于或等于 x 的元素数。
+     *
      *   numLessThanEqual(0, Arrays.asList(1, 2, 3, 4, 5)) == 0
      *   numLessThanEqual(1, Arrays.asList(1, 2, 3, 4, 5)) == 1
      *   numLessThanEqual(2, Arrays.asList(1, 2, 3, 4, 5)) == 2
@@ -201,6 +207,8 @@ class InnerNode extends BPlusNode {
      * This helper function is useful when we're navigating down a B+ tree and
      * need to decide which child to visit. For example, imagine an index node
      * with the following 4 keys and 5 children pointers:
+     *
+     * 辅助函数,当我们向下导航 B+ 树并需要决定访问哪个子节点时可使用此方法。
      *
      *     +---+---+---+---+
      *     | a | b | c | d |

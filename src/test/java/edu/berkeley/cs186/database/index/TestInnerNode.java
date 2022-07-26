@@ -102,6 +102,12 @@ public class TestInnerNode {
     private long leaf2;
 
     // See comment above.
+
+    /**
+     * 实现put方法前，可以静态组装树（通过创建内部节点，叶子节点对象，然后关联右兄弟节点，子节点，组成B+树）。
+     * 相当于初始化的方式。
+     * 这样可以在初始化后，先实现get方法并测试。
+     */
     @Before
     public void resetMembers() {
         DiskSpaceManager diskSpaceManager = new MemoryDiskSpaceManager();

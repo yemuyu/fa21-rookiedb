@@ -24,7 +24,7 @@ abstract class BPlusNode {
      * For example, consider the following B+ tree (for brevity, only keys are
      * shown; record ids are omitted).
      *
-     * n.get(k)返回从n查询k可能所在的叶节点。注意是可能
+     * n.get(k)返回从n查询k可能所在的叶节点。注意是可能，不一定在B+中存在此数据。
      *
      *                               inner
      *                               +----+----+----+----+

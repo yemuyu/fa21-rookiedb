@@ -150,7 +150,9 @@ class LeafNode extends BPlusNode {
     public LeafNode get(DataBox key) {
         // TODO(proj2): implement
 
-        return null;
+//        return null;
+        //叶子结点只需要返回自己即可
+        return this;
     }
 
     // See BPlusNode.getLeftmostLeaf.
@@ -187,7 +189,9 @@ class LeafNode extends BPlusNode {
     }
 
     // Iterators ///////////////////////////////////////////////////////////////
-    /** Return the record id associated with `key`. */
+    /** Return the record id associated with `key`.
+     * 返回key关联的recordId，方法名叫getRecordId可能会更容易理解
+     * */
     Optional<RecordId> getKey(DataBox key) {
         int index = keys.indexOf(key);
         return index == -1 ? Optional.empty() : Optional.of(rids.get(index));

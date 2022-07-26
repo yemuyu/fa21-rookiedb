@@ -146,8 +146,10 @@ public class BPlusTree {
         LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
 
         // TODO(proj2): implement
-
-        return Optional.empty();
+        //内部节点：比较key与内部节点的keys,找到对应的下级内部节点或叶子节点
+        //查询key所在的叶子节点
+        LeafNode leafNode = root.get(key);
+        return leafNode.getKey(key);
     }
 
     /**
