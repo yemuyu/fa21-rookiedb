@@ -159,8 +159,8 @@ class LeafNode extends BPlusNode {
     @Override
     public LeafNode getLeftmostLeaf() {
         // TODO(proj2): implement
-
-        return null;
+        //叶子节点，返回自身
+        return this;
     }
 
     // See BPlusNode.put.

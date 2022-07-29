@@ -94,8 +94,22 @@ class InnerNode extends BPlusNode {
     public LeafNode getLeftmostLeaf() {
         assert(children.size() > 0);
         // TODO(proj2): implement
+        //内部节点，返回最左叶子节点，即index为0的子节点
+        return getNextLeftNode(this);
+    }
 
-        return null;
+    /**
+     * 递归
+     * @param child
+     * @return
+     */
+    private LeafNode getNextLeftNode(BPlusNode child) {
+        if(child instanceof LeafNode) {
+            return (LeafNode)child;
+        }
+        InnerNode innerNode = (InnerNode)child;
+        child = innerNode.getChild(0);
+        return getNextLeftNode(child);
     }
 
     // See BPlusNode.put.
