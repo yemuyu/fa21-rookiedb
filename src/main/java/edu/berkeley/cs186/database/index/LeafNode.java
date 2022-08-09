@@ -163,10 +163,35 @@ class LeafNode extends BPlusNode {
         return this;
     }
 
+
+
+    /**
+     * 如果插入数据对 pair (k, r) 没有使n溢出, 则该插入方法返回一个Optional.empty();
+     * 如果插入数据对 pair (k, r) 导致n溢出,然后n需要分裂为左右节点返回一个pair,其中right_node_page_num是新创建的右结点的页码,split_key的值取决于n是内部结点还是叶结点;
+     * @param key
+     * @param rid
+     * @return
+     */
     // See BPlusNode.put.
     @Override
     public Optional<Pair<DataBox, Long>> put(DataBox key, RecordId rid) {
         // TODO(proj2): implement
+        //插入到叶子节点
+        int index = InnerNode.numLessThanEqual(key, keys);
+        //add(int index, E element),插入到指定位置，指定位置原数据和后面数据，向后面移动一位
+        keys.add(index, key);
+        rids.add(index, rid);
+
+        // 获得阶数,溢出判断
+        int d = metadata.getOrder();
+        //没有溢出，返回空值即可
+        if (keys.size() <= 2 * d) {
+            //序列化
+            sync();
+            return Optional.empty();
+        }else {
+
+        }
 
         return Optional.empty();
     }

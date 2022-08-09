@@ -69,10 +69,14 @@ abstract class BPlusNode {
      *           created right node, and the value of split_key depends on
      *           whether n is an inner node or a leaf node (described more below).
      *
+     * 如果插入数据对 pair (k, r) 没有使n溢出, 则该插入方法返回一个Optional.empty();
+     * 如果插入数据对 pair (k, r) 导致n溢出,然后n需要分裂为左右节点返回一个pair,其中right_node_page_num是新创建的右结点的页码,split_key的值取决于n是内部结点还是叶结点;
+     *
      * Now we explain how to split nodes and which split keys to return. Let's
      * take a look at an example. Consider inserting the key 4 into the example
      * tree above. No nodes overflow (i.e. we always hit case 1). The tree then
      * looks like this:
+     *
      *
      *                               inner
      *                               +----+----+----+----+
@@ -100,6 +104,10 @@ abstract class BPlusNode {
      * split key. In this example, 3 is the split key. After leaf0 splits, inner
      * inserts the new key and child pointer into itself and hits case 0 (i.e. it
      * does not overflow). The tree looks like this:
+     *
+     * 叶子节点分裂，返回右节点中的第一个条目作为拆分键。例子中，3是拆分键，
+     * 拆分键上浮到上级内部节点中，
+     * 在leaf0分裂后，将新的key和child指针插入到内部节点
      *
      * 内部节点插入新key（3），并且增加子节点指针，此时符合0的场景，即内部节点不溢出的情况。
      *
