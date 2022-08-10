@@ -65,6 +65,7 @@ public class BPlusTree {
 
     // Constructors ////////////////////////////////////////////////////////////
     /**
+     * 创建空树，创建一个空的叶子结点作为根结点
      * Construct a new B+ tree with metadata `metadata` and lock context `lockContext`.
      * `metadata` contains information about the order, partition number,
      * root page number, and type of keys.
@@ -260,7 +261,21 @@ public class BPlusTree {
         // Use the provided updateRoot() helper method to change
         // the tree's root if the old root splits.
 
-        return;
+        Optional<Pair<DataBox, Long>> o = root.put(key, rid);
+        if(!o.isPresent()) {
+            //不分裂，返回
+            return;
+        }
+
+        // 下面的分裂逻辑
+        Pair<DataBox, Long> p = o.get();
+        List<DataBox> keys = new ArrayList<>();
+        keys.add(p.getFirst());
+        List<Long> children = new ArrayList<>();
+        children.add(root.getPage().getPageNum());
+        children.add(p.getSecond());
+        //往上创建根结点，内部结点
+        updateRoot(new InnerNode(metadata, bufferManager, keys, children, lockContext));
     }
 
     /**

@@ -170,13 +170,13 @@ class LeafNode extends BPlusNode {
      * 如果插入数据对 pair (k, r) 导致n溢出,然后n需要分裂为左右节点返回一个pair,其中right_node_page_num是新创建的右结点的页码,split_key的值取决于n是内部结点还是叶结点;
      * @param key
      * @param rid
-     * @return
+     * @return 未分裂返回空，分裂返回右兄弟结点第一个元素
      */
     // See BPlusNode.put.
     @Override
     public Optional<Pair<DataBox, Long>> put(DataBox key, RecordId rid) {
         // TODO(proj2): implement
-        //插入到叶子节点
+        //1.插入到叶子节点
         int index = InnerNode.numLessThanEqual(key, keys);
         //add(int index, E element),插入到指定位置，指定位置原数据和后面数据，向后面移动一位
         keys.add(index, key);
@@ -184,16 +184,30 @@ class LeafNode extends BPlusNode {
 
         // 获得阶数,溢出判断
         int d = metadata.getOrder();
-        //没有溢出，返回空值即可
+        //2.没有溢出，返回空值即可
         if (keys.size() <= 2 * d) {
             //序列化
             sync();
             return Optional.empty();
         }else {
-
+            //3.如果结点溢出则进行下面的分裂操作
+            //3-1.keys,rids分裂左右两部分
+            List<DataBox> leftKeys = keys.subList(0, d);
+            List<DataBox> rightKeys = keys.subList(d, 2*d+1);
+            List<RecordId> leftRids = rids.subList(0, d);
+            List<RecordId> rightRids = rids.subList(d, 2 * d + 1);
+            //3-2.创建右结点,右结点的rightSibling即为分列前节点的rightSibling
+            LeafNode rightNode = new LeafNode(metadata, bufferManager, rightKeys, rightRids, rightSibling, treeContext);
+            //3-3.更新左结点
+            this.keys = leftKeys;
+            this.rids = leftRids;
+            //rightSibling：右兄弟结点，右兄弟结点的页码
+            long rightNodePageNum = rightNode.getPage().getPageNum();
+            this.rightSibling = Optional.of(rightNodePageNum);
+            sync();
+            //返回右结点第一个元素
+            return Optional.of(new Pair<>(rightKeys.get(0), rightNodePageNum));
         }
-
-        return Optional.empty();
     }
 
     // See BPlusNode.bulkLoad.

@@ -112,12 +112,54 @@ class InnerNode extends BPlusNode {
         return getNextLeftNode(child);
     }
 
+    /**
+     * 内部节点put
+     * 内部结点与叶子结点区别：溢出分裂结点上浮到上一层，右结点中不需要保存
+     * @param key
+     * @param rid
+     * @return
+     */
     // See BPlusNode.put.
     @Override
     public Optional<Pair<DataBox, Long>> put(DataBox key, RecordId rid) {
         // TODO(proj2): implement
-
-        return Optional.empty();
+        //1.插入到内部结点
+        int index = InnerNode.numLessThanEqual(key, keys);
+        //1-1.获取内部结点的子结点，递归插入结点，如果是叶子结点调用叶子结点put，如果是内部结点调用内部结点put做递归插入，一直递归到没有子结点（即递归到叶子结点）
+        BPlusNode child = getChild(index);
+        Optional<Pair<DataBox, Long>> o = child.put(key, rid);
+        // 如果不需要分裂就直接跳出递归：插入叶子结点没有溢出，没有返回溢出的元素
+        if (!o.isPresent()) {
+            return Optional.empty();
+        }
+        //1-2.叶子结点溢出，上浮到上层内部节点
+        Pair<DataBox, Long> p = o.get();
+        keys.add(index, p.getFirst());
+        children.add(index+1, p.getSecond());
+        //上浮后内部节点溢出判断
+        int d = metadata.getOrder();
+        if(keys.size() <= 2*d) {
+            //2.没有溢出，返回空值
+            sync();
+            return Optional.empty();
+        }else {
+            //3.溢出，分裂
+            //3-1.内部结点只分裂keys，没有recordId，分裂为左结点，右结点，中间结点
+            List<DataBox> leftKeys = keys.subList(0, d);
+            List<DataBox> rightKeys = keys.subList(d + 1, 2 * d + 1);
+            DataBox middleKey = keys.get(d);
+            //3-2.分裂内部结点的子结点
+            List<Long> leftChildren = children.subList(0, d + 1);
+            List<Long> rightChildren = children.subList(d + 1, 2 * d + 1);
+            //3-3.创建右结点
+            InnerNode rightNode = new InnerNode(metadata, bufferManager, rightKeys, rightChildren, treeContext);
+            //3-4.更新左结点
+            this.keys = leftKeys;
+            this.children = leftChildren;
+            sync();
+            //3-5.返回中间结点，结点的页码怎么计算？
+            return Optional.of(new Pair<>(middleKey, rightNode.getPage().getPageNum()));
+        }
     }
 
     // See BPlusNode.bulkLoad.
