@@ -159,6 +159,9 @@ public class BPlusTree {
      * then scanEqual(k) returns an empty iterator. If get(k) returns
      * Optional.of(rid) for some rid, then scanEqual(k) returns an iterator
      * over rid.
+     *
+     * scanEqual(k) 与 get(k) 等价，只是它返回的是迭代器而不是 Optional。也就是说，如果 get(k) 返回 Optional.empty()，那么 scanEqual(k) 返回一个空迭代器。
+     * 如果 get(k) 为某些 rid 返回 Optional.of(rid)，则 scanEqual(k) 返回一个rid的迭代器，rid组成list，返回list的迭代器。
      */
     public Iterator<RecordId> scanEqual(DataBox key) {
         typecheck(key);
@@ -199,12 +202,18 @@ public class BPlusTree {
      * return an iterator over them. Your iterator must lazily scan over the
      * leaves of the B+ tree. Solutions that materialize all record ids in
      * memory will receive 0 points.
+     *
+     * 请注意，您不能具体化内存中的所有记录 ID，然后在它们上返回一个迭代器。您的迭代器必须懒惰地扫描 B+ 树的叶子。
+     *
+     * 实现：只需要考虑叶子结点，所有数据都在叶子结点上，而且叶子结点是排序的，遍历叶子结点的右兄弟结点就可以了
+     *
      */
     public Iterator<RecordId> scanAll() {
         // TODO(proj4_integration): Update the following line
         LockUtil.ensureSufficientLockHeld(lockContext, LockType.NL);
 
         // TODO(proj2): Return a BPlusTreeIterator.
+        //实现BPlusTreeIterator
 
         return Collections.emptyIterator();
     }
@@ -213,6 +222,8 @@ public class BPlusTree {
      * Returns an iterator over all the RecordIds stored in the B+ tree that
      * are greater than or equal to `key`. RecordIds are returned in ascending
      * of their corresponding keys.
+     *
+     * 返回存储在 B+ 树中大于或等于 `key` 的所有 RecordId 的迭代器。 RecordIds 按其对应键的升序返回
      *
      *   // Insert some values into a tree.
      *   tree.put(new IntDataBox(2), new RecordId(2, (short) 2));
@@ -438,19 +449,47 @@ public class BPlusTree {
     // Iterator ////////////////////////////////////////////////////////////////
     private class BPlusTreeIterator implements Iterator<RecordId> {
         // TODO(proj2): Add whatever fields and constructors you want here.
+        // 定义迭代器和被迭代的对象
+        private Iterator<RecordId> iter;
+        private LeafNode leaf;
+
+        /**
+         * 遍历所有的叶子结点
+         */
+        public BPlusTreeIterator() {
+            this(root.getLeftmostLeaf(), null);
+        }
+
+        /**
+         * 从指定的叶子结点遍历
+         * @param leaf
+         * @param iter
+         */
+        public BPlusTreeIterator(LeafNode leaf, Iterator<RecordId> iter) {
+            this.leaf = leaf;
+            this.iter = iter == null ? leaf.scanAll() : iter;
+        }
 
         @Override
         public boolean hasNext() {
             // TODO(proj2): implement
-
-            return false;
+            return iter.hasNext() // 自身迭代器的hasNext
+                    || leaf.getRightSibling().isPresent(); // 右兄弟是否存在
         }
 
         @Override
         public RecordId next() {
             // TODO(proj2): implement
-
-            throw new NoSuchElementException();
+            // 如果自身有,就直接next即可
+            if (iter.hasNext()) {
+                return iter.next();
+            }
+            // 如果自身没有了,遍历右兄弟节点
+            else {
+                leaf = leaf.getRightSibling().get();
+                iter = leaf.scanAll();
+                return next();
+            }
         }
     }
 }
