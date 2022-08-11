@@ -216,7 +216,39 @@ class LeafNode extends BPlusNode {
             float fillFactor) {
         // TODO(proj2): implement
 
-        return Optional.empty();
+        int d = metadata.getOrder();
+        if (fillFactor * 2 * d <= 0) {
+            throw new BPlusTreeException("Cannot bulk-load to empty leaves.");
+        }
+
+        // 按照负载因子的容量限制来进行赋值
+        int numKeys = (int) Math.ceil(2 * d * fillFactor);
+        for (int i = keys.size(); i < numKeys && data.hasNext(); ++i) {
+            Pair<DataBox, RecordId> pair = data.next();
+            keys.add(pair.getFirst());
+            rids.add(pair.getSecond());
+        }
+
+        if (!data.hasNext()) {
+            sync();
+            return Optional.empty();
+        }
+
+        List<DataBox> rightKeys = new ArrayList<>();
+        List<RecordId> rightRids = new ArrayList<>();
+        Pair<DataBox, RecordId> pair = data.next();
+        rightKeys.add(0, pair.getFirst());
+        rightRids.add(0, pair.getSecond());
+
+        // Create right node.
+        LeafNode n = new LeafNode(metadata, bufferManager, rightKeys, rightRids, rightSibling, treeContext);
+        long pageNum = n.getPage().getPageNum();
+
+        // Update left node.
+        this.rightSibling = Optional.of(pageNum);
+        sync();
+
+        return Optional.of(new Pair<>(rightKeys.get(0), pageNum));
     }
 
     // See BPlusNode.remove.

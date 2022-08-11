@@ -297,6 +297,8 @@ public class BPlusTree {
      * fillFactor specifies the fill factor for leaves only; inner nodes should
      * be filled up to full and split in half exactly like in put.
      *
+     * fillFactor 仅指定叶子的填充因子；内部节点应该被填满
+     *
      * This method should raise an exception if the tree is not empty at time
      * of bulk loading. If data does not meet the preconditions (contains
      * duplicates or not in order), the resulting behavior is undefined.
@@ -305,6 +307,8 @@ public class BPlusTree {
      *
      * The behavior of this method should be similar to that of InnerNode's
      * bulkLoad (see comments in BPlusNode.bulkLoad).
+     *
+     * 该方法的行为应该类似于 InnerNode 的 bulkLoad
      */
     public void bulkLoad(Iterator<Pair<DataBox, RecordId>> data, float fillFactor) {
         // TODO(proj4_integration): Update the following line
@@ -315,7 +319,31 @@ public class BPlusTree {
         // Use the provided updateRoot() helper method to change
         // the tree's root if the old root splits.
 
-        return;
+        // 获得叶子结点来判断是否为空树
+        LeafNode left = this.root.getLeftmostLeaf();
+        if (left != this.root // 叶子不等于根 证明有数据
+                || left.scanAll().hasNext()) { // 叶子下的迭代器能后进行hasNext 证明有数据
+            throw new BPlusTreeException("cannot bulk load into nonempty tree");
+        }
+        // 传进来是一个Iterator,在前面没有想到要在开始的时候去迭代它
+        while (data.hasNext()) {
+            // 递归往下走
+            Optional<Pair<DataBox, Long>> res = this.root.bulkLoad(data, fillFactor);
+            if (res.isPresent()) {
+                Pair<DataBox, Long> p = res.get();
+
+                // 组装 root 节点的 keys和children
+                List<DataBox> keys = new ArrayList<>();
+                keys.add(p.getFirst());
+
+                List<Long> children = new ArrayList<>();
+                children.add(root.getPage().getPageNum());
+                children.add(p.getSecond());
+
+                // 使用官方推荐的updateRoot来更新结点,不要用直接赋值的方式
+                updateRoot(new InnerNode(metadata, bufferManager, keys, children, lockContext));
+            }
+        }
     }
 
     /**
