@@ -20,21 +20,26 @@ import java.util.function.BiConsumer;
  * a new Frame object, with the same underlying byte array), with old Frame objects
  * backed by the same byte array marked as invalid.
  *
- * 缓冲区管理器的实现，具有可配置的页面替换策略。
+ * 缓冲区管理器的实现，可配置页面替换策略。
+ * 缓冲区管理器 负责管理内存中的页,并处理来自文件和索引管理器的页请求。请记住,内存空间是有限的,因此我们无法在缓存池中存储 所有页。
+ * 缓冲区管理器负责回收策略,或选择在空间已满时将哪些页回收。当页从内存中移出或新页读入内存时,缓冲区管理器与磁盘空间管理器通信以执行所需的磁盘操作。
  */
 public class BufferManager implements AutoCloseable {
     // We reserve 36 bytes on each page for bookkeeping for recovery
     // (used to store the pageLSN, and to ensure that a redo-only/undo-only log record can
     // fit on one page).
+    //36个保留字节
     public static final short RESERVED_SPACE = 36;
 
     // Effective page size available to users of buffer manager.
+    //每页可用的字节
     public static final short EFFECTIVE_PAGE_SIZE = (short) (DiskSpaceManager.PAGE_SIZE - RESERVED_SPACE);
 
     // Buffer frames
     private Frame[] frames;
 
     // Reference to the disk space manager underneath this buffer manager instance.
+    //缓冲区管理器实例下的磁盘空间管理器
     private DiskSpaceManager diskSpaceManager;
 
     // Map of page number to frame index
@@ -60,7 +65,8 @@ public class BufferManager implements AutoCloseable {
      * underlying byte array. Free frames use the index field to create a (singly) linked
      * list between free frames.
      *
-     * 缓存帧，包含页数据，包装底层字节数组。空闲的帧以单链表结构管理。
+     * BufferFrame的实现类
+     * 缓存帧，已加载的页的页数据，包装底层字节数组。空闲的帧以单链表结构管理。
      */
     class Frame extends BufferFrame {
         private static final int INVALID_INDEX = Integer.MIN_VALUE;
@@ -131,6 +137,7 @@ public class BufferManager implements AutoCloseable {
 
         /**
          * Invalidates the frame, flushing it if necessary.
+         * 将帧置为无效
          */
         private void invalidate() {
             if (this.isValid()) {
@@ -394,6 +401,9 @@ public class BufferManager implements AutoCloseable {
      * Fetches a buffer frame with data for the specified page. Reuses existing
      * buffer frame if page already loaded in memory. Pins the buffer frame.
      * Cannot be used outside the package.
+     *
+     * 获取page的帧
+     * 如果页面已加载到内存中，则复用现有的缓冲区帧。固定这个帧。
      *
      * @param pageNum page number
      * @return buffer frame with specified page loaded

@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * 磁盘空间管理，具有虚拟页转换，两级header页。(实际页号与虚拟页号有一层转换)
+ * 允许（页面大小为 4K）每个分区 256G 的数据
  * An implementation of a disk space manager with virtual page translation, and
  * two levels of header pages, allowing for (with page size of 4K) 256G worth of data per partition:
  *
@@ -21,15 +23,19 @@ import java.util.concurrent.locks.ReentrantLock;
  *     /    |     |     |     \                   ...                   /    |     |     |     \
  * [data] [data] ... [data] [data]                                   [data] [data] ... [data] [data]
  *
+ * 每个header页存储一个位图，指示每个数据页是否已分配，管理32K页。master页存储16位整数，表示在header页中已分配的页。
  * Each header page stores a bitmap, indicating whether each of the data pages has been allocated,
  * and manages 32K pages. The master page stores 16-bit integers for each of the header pages indicating
  * the number of data pages that have been allocated under the header page (managing 2K header pages).
  * A single partition may therefore have a maximum of 64M data pages.
  *
+ * master和header页一直缓存在内存中，对其修改会立即刷新到磁盘。
+ * 这会带来相当小的内存开销（128M 分区缓存了 2 个页面）。此缓存与缓冲区管理器的缓存分开。
  * Master and header pages are cached permanently in memory; changes to these are immediately flushed to
  * disk. This imposes a fairly small memory overhead (128M partitions have 2 pages cached). This caching
  * is done separately from the buffer manager's caching.
  *
+ * 虚拟页号是 64 位整数（Java 长整数），按以下格式分配给数据页：分区号 10^10 + n 用于分区的第 n 个数据页（从 0 开始索引）。
  * Virtual page numbers are 64-bit integers (Java longs) assigned to data pages in the following format:
  *       partition number * 10^10 + n
  * for the n-th data page of the partition (indexed from 0). This particular format (instead of a simpler

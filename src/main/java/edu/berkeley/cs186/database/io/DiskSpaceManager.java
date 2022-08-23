@@ -1,5 +1,8 @@
 package edu.berkeley.cs186.database.io;
 
+/**
+ * 磁盘空间管理
+ */
 public interface DiskSpaceManager extends AutoCloseable {
     short PAGE_SIZE = 4096; // size of a page in bytes
     long INVALID_PAGE_NUM = -1L; // a page number that is always invalid
@@ -15,6 +18,7 @@ public interface DiskSpaceManager extends AutoCloseable {
     int allocPart();
 
     /**
+     * 使用指定分区号分配一个新分区
      * 分区，区包含页
      * Allocates a new partition with a specific partition number.
      *
@@ -31,6 +35,7 @@ public interface DiskSpaceManager extends AutoCloseable {
     void freePart(int partNum);
 
     /**
+     * 分配page
      * Allocates a new page.
      * @param partNum partition to allocate new page under
      * @return virtual page number of new page

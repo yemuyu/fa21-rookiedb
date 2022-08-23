@@ -3,6 +3,8 @@ package edu.berkeley.cs186.database.memory;
 /**
  * Implementation of LRU eviction policy, which works by creating a
  * doubly-linked list between frames in order of ascending use time.
+ *
+ * 双链表实现LRU
  */
 public class LRUEvictionPolicy implements EvictionPolicy {
     private Tag listHead;

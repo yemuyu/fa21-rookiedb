@@ -2,6 +2,9 @@ package edu.berkeley.cs186.database.memory;
 
 /**
  * Buffer frame.
+ *
+ * 将内存划分成用来存放磁盘中的page的帧(frame), 这块内存就成为了缓冲池。
+ * 一个缓冲帧恰好可以存一个page。
  */
 abstract class BufferFrame {
     Object tag = null;
@@ -10,6 +13,9 @@ abstract class BufferFrame {
     /**
      * Pin buffer frame; cannot be evicted while pinned. A "hit" happens when the
      * buffer frame gets pinned.
+     *
+     * pin:固定。
+     * 固定帧，固定的帧不会被驱逐策略驱逐。
      */
     void pin() {
         ++pinCount;
@@ -17,6 +23,7 @@ abstract class BufferFrame {
 
     /**
      * Unpin buffer frame.
+     * 解除固定帧
      */
     void unpin() {
         if (!isPinned()) {
@@ -44,6 +51,7 @@ abstract class BufferFrame {
 
     /**
      * Flushes this buffer frame to disk, but does not unload it.
+     * 刷新内存帧到磁盘，但是并不从内存中驱逐，即此帧还在内存中存在
      */
     abstract void flush();
 

@@ -184,6 +184,8 @@ public class Page {
     /**
      * Implementation of Buffer for the page data. All reads/writes ultimately wrap around
      * Page#readBytes and Page#writeBytes, which delegates work to the buffer manager.
+     *
+     * page数据的Buffer。所有读写操作PagereadBytes 和 PagewriteBytes，它们将工作委托给缓冲区管理器。
      */
     private class PageBuffer extends AbstractBuffer {
         private int offset;
