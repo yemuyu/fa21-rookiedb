@@ -10,9 +10,14 @@ import java.util.*;
  * NOT be used directly: instead, code should call methods of LockContext to
  * acquire/release/promote/escalate locks.
  *
+ * LockManager 维护记录哪些事务对哪些资源有哪些锁定，并处理排队逻辑。
+ * LockManager通常不应该直接使用：代码应该调用 LockContext 的方法来使用锁。
+ *
  * The LockManager is primarily concerned with the mappings between
  * transactions, resources, and locks, and does not concern itself with multiple
  * levels of granularity. Multigranularity is handled by LockContext instead.
+ *
+ * LockManager 主要关心事务、资源和锁之间的映射，不关心多层次的粒度。多粒度由 LockContext 处理。
  *
  * Each resource the lock manager manages has its own queue of LockRequest
  * objects representing a request to acquire (or promote/acquire-and-release) a
@@ -24,6 +29,8 @@ import java.util.*;
  * removing a request by T1 to acquire X(db) should be treated as if T1 had just
  * requested X(db) and there were no queue on db: T1 should be given the X lock
  * on db, and put in an unblocked state via Transaction#unblock).
+ *
+ * 锁管理器管理的每个资源都有自己的 LockRequest 对象队列，表示获取（或提升获取并释放）当时无法满足的锁的请求（进入队列排队等待）。
  *
  * This does mean that in the case of:
  *    queue: S(A) X(A) S(A)
@@ -56,6 +63,8 @@ public class LockManager {
          * conflicts for locks held by transaction with id `except`, which is
          * useful when a transaction tries to replace a lock it already has on
          * the resource.
+         *
+         * 检查 `lockType` 是否与预先存在的锁兼容。
          */
         public boolean checkCompatible(LockType lockType, long except) {
             // TODO(proj4_part1): implement
@@ -66,6 +75,7 @@ public class LockManager {
          * Gives the transaction the lock `lock`. Assumes that the lock is
          * compatible. Updates lock on resource if the transaction already has a
          * lock.
+         * 为事务提供锁“lock”。假设锁是兼容的。如果事务已经有锁，则更新资源上的锁。
          */
         public void grantOrUpdateLock(Lock lock) {
             // TODO(proj4_part1): implement

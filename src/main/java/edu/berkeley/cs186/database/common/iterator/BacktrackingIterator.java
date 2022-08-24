@@ -3,6 +3,7 @@ package edu.berkeley.cs186.database.common.iterator;
 import java.util.Iterator;
 
 /**
+ * backtracking:回溯
  * A BacktrackingIterator supports marking a point in iteration, and resetting the
  * state of the iterator back to that mark. For example, if you had a backtracking
  * iterator with the values [1,2,3]:
@@ -42,6 +43,9 @@ public interface BacktrackingIterator<T> extends Iterator<T> {
     void markNext();
 
     /**
+     * reset() 将迭代器重置到最后标记的位置。随后对 next() 的调用应返回被标记的值。
+     * 如果没有任何标记，reset() 什么也不做。您可以根据需要多次 reset() 到同一点，直到设置新标记
+     *
      * reset() resets the iterator to the last marked location. The subsequent
      * call to next() should return the value that was marked. If nothing has
      * been marked, reset() does nothing. You may reset() to the same point as
